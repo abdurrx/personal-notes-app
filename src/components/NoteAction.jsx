@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { MdOutlineArchive, MdOutlineUnarchive, MdOutlineDelete, } from "react-icons/md";
 
-const NoteAction = ({ id, archived, onArchive, onDelete }) => {
+function NoteAction({ id, archived, onArchive, onDelete }) {
   return (
     <div className="detail-page__action">
       <button type="button" onClick={() => onArchive(id)} className="action">

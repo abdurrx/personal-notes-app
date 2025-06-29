@@ -1,10 +1,14 @@
 import React from "react";
 
-const NotFoundPage = () => {
+import LocaleContext from "../contexts/LocaleContext";
+
+function NotFoundPage () {
+  const { locale } = React.useContext(LocaleContext);
+
   return (
     <section>
       <h2>404</h2>
-      <p>Page not found</p>
+      <p>{locale === "id" ? "Halaman tidak ditemukan" : "Page not found"}</p>
     </section>
   );
 };

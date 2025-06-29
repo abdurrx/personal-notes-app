@@ -1,76 +1,84 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useParams, useNavigate } from "react-router-dom";
 import parser from "html-react-parser";
-import PropTypes from "prop-types";
+
+import Loading from "../components/Loading";
 import NoteAction from "../components/NoteAction";
+
+import LocaleContext from "../contexts/LocaleContext";
+import { getNote, archiveNote, unarchiveNote, deleteNote, } from "../utils/network-data";
 import { showFormattedDate } from "../utils";
-import { getNote, archiveNote, unarchiveNote, deleteNote, } from "../utils/local-data";
 
-const DetailPageWrapper = () => {
+function DetailPage() {
   const { id } = useParams();
+  const [loading, setLoading] = React.useState(true);
+  const [notes, setNotes] = React.useState([]);
+
   const navigate = useNavigate();
+  const { locale } = React.useContext(LocaleContext);
 
-  return <DetailPage id={id} navigate={navigate} />;
-}
+  React.useEffect(() => {
+    getNote(id).then((notes) => {
+      setNotes(notes.data);
+      setLoading(false);
+    });
 
-class DetailPage extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      note: getNote(props.id),
+    return () => {
+      setLoading(true);
+      setNotes([]);
     };
+  }, []);
 
-    this.onDeleteHandler = this.onDeleteHandler.bind(this);
-    this.onArchiveHandler = this.onArchiveHandler.bind(this);
-  }
-
-  onDeleteHandler(id) {
-    deleteNote(id);
-    this.props.navigate("/");
-  }
-
-  onArchiveHandler(id) {
-    if (!this.state.note.archived) {
-      archiveNote(id);
+  async function onArchiveHandler() {
+    if (!notes.archived) {
+      await archiveNote(notes.id);
     } else {
-      unarchiveNote(id);
+      await unarchiveNote(notes.id);
     }
-    this.props.navigate("/");
+
+    navigate("/");
   }
 
-  render() {
-    const { note } = this.state;
-    if (!note) {
-      return (
+  async function onDeleteHandler() {
+    await deleteNote(notes.id);
+    navigate("/");
+  }
+
+  if (loading) return <Loading />;
+
+  return (
+    <>
+      {!notes && (
         <section>
           <h2>404</h2>
           <p>Page not found</p>
         </section>
-      );
-    }
+      )}
 
-    const { id, title, body, archived, createdAt } = note;
-
-    return (
-      <section className="detail-page">
-        <h3 className="detail-page__title">{title}</h3>
-        <p className="detail-page__createdAt">{showFormattedDate(createdAt)}</p>
-        <div className="detail-page__body">{parser(body)}</div>
-        <NoteAction
-          id={id}
-          archived={archived}
-          onArchive={this.onArchiveHandler}
-          onDelete={this.onDeleteHandler}
-        />
-      </section>
-    );
-  }
+      {notes && (
+        <section className="detail-page">
+          <h3 className="detail-page__title">{notes.title}</h3>
+          <p className="detail-page__createdAt">
+            {locale === "id"
+              ? showFormattedDate(notes.createdAt, "id-ID")
+              : showFormattedDate(notes.createdAt, "en-US")}
+          </p>
+          <div className="detail-page__body">{parser(notes.body)}</div>
+          <NoteAction
+            id={notes.id}
+            archived={notes.archived}
+            onArchive={onArchiveHandler}
+            onDelete={onDeleteHandler}
+          />
+        </section>
+      )}
+    </>
+  );
 }
 
 DetailPage.propTypes = {
-  id: PropTypes.string.isRequired,
-  navigate: PropTypes.func.isRequired,
+  id: PropTypes.string,
 };
 
-export default DetailPageWrapper;
+export default DetailPage;

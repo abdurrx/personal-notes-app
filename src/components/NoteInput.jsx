@@ -2,72 +2,50 @@ import React from "react";
 import PropTypes from "prop-types";
 import { MdOutlineDone } from "react-icons/md";
 
-class NoteInput extends React.Component {
-  constructor(props) {
-    super(props);
+import useInput from "../hooks/useInput";
 
-    this.state = {
-      title: "",
-      body: "",
-    };
+function NoteInput({ addNote }) {
+  const [title, setTitle] = useInput("");
+  const [body, setBody] = React.useState("");
 
-    this.onTitleChangeEventHandler = this.onTitleChangeEventHandler.bind(this);
-    this.onBodyChangeEventHandler = this.onBodyChangeEventHandler.bind(this);
-    this.onSubmitEventHandler = this.onSubmitEventHandler.bind(this);
-  }
+  const onBodyInputHandler = (event) => {
+    setBody(event.target.innerText);
+  };
 
-  onTitleChangeEventHandler(event) {
-    this.setState(() => {
-      return {
-        title: event.target.value,
-      };
-    });
-  }
-
-  onBodyChangeEventHandler(event) {
-    this.setState(() => {
-      return {
-        body: event.target.innerHTML,
-      };
-    });
-  }
-
-  onSubmitEventHandler(event) {
+  async function onSubmitEventHandler(event) {
     event.preventDefault();
-    this.props.addNote(this.state);
+    addNote({ title, body });
   }
 
-  render() {
-    return (
-      <div className="add-new-page__input">
-        <input
-          type="text"
-          placeholder="Catatan rahasia"
-          className="add-new-page__input__title"
-          value={this.state.title}
-          onChange={this.onTitleChangeEventHandler}
-        />
+  return (
+    <div className="add-new-page__input">
+      <input
+        type="text"
+        placeholder="Catatan rahasia"
+        className="add-new-page__input__title"
+        value={title}
+        onChange={setTitle}
+      />
 
-        <div
-          className="add-new-page__input__body"
-          data-placeholder="Sebenarnya saya adalah ...."
-          contentEditable
-          onInput={this.onBodyChangeEventHandler}
-        />
+      <div
+        className="add-new-page__input__body"
+        data-placeholder="Sebenarnya saya adalah ...."
+        contentEditable
+        onInput={onBodyInputHandler}
+      />
 
-        <div className="add-new-page__action">
-          <button
-            type="submit"
-            onClick={this.onSubmitEventHandler}
-            className="action"
-            title="Simpan"
-          >
-            <MdOutlineDone />
-          </button>
-        </div>
+      <div className="add-new-page__action">
+        <button
+          type="submit"
+          onClick={onSubmitEventHandler}
+          className="action"
+          title="Simpan"
+        >
+          <MdOutlineDone />
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 NoteInput.propTypes = {
